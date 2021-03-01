@@ -1,0 +1,38 @@
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.AboutBox1.resources
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.CreateFile.resources
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.Main.resources
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.ImportForm.resources
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.Properties.Resources.resources
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.csproj.GenerateResource.Cache
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.csproj.CoreCompileInputs.cache
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.exe.config
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.exe
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.pdb
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.exe
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.pdb
+E:\Users\Jeremy\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\bin\Debug\System.Data.SqlServerCe.dll
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.exe.config
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.exe
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.pdb
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.csprojResolveAssemblyReference.cache
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.AboutBox1.resources
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.CreateFile.resources
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.Main.resources
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.ImportForm.resources
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.Properties.Resources.resources
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.csproj.GenerateResource.Cache
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.csproj.CoreCompileInputs.cache
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.exe
+C:\Users\rolll\Documents\Work\BellCo\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.pdb
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.exe.config
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.exe
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\bin\Debug\Engraver's Friend.pdb
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.CreateFile.resources
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.Main.resources
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.ImportForm.resources
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.Properties.Resources.resources
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.csproj.GenerateResource.Cache
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.csproj.CoreCompileInputs.cache
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.exe
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver's Friend.pdb
+C:\Users\rolll\Documents\Work\Github Projects\Engraver's Friend\Engraver's Friend\obj\Debug\Engraver_s_Friend.AboutBox.resources
