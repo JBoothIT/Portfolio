@@ -1,0 +1,626 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jul  2 15:40:19 2019
+
+@author: Robert Pressler and John Bedingfield
+This code is a controller to manage the VPN instances
+It takes user input and stands up AWS EC2 instances appropriately.
+It manages keypair import, setting up security groups, configuring the instances for
+   multiple hops, in a user selectable location
+
+
+This code assumes:
+    1. Your AWS account public and private keys are in default location at ~/.aws/credentials:
+    in a file called 'credentials/txt', and in the following format:
+            [default]
+            aws_access_key_id = KEYHERE...
+            aws_secret_access_key = KEYHERE...
+    
+    
+    2.  You have created AWS keys per our first lab exercise.
+    Place both your server keypair files in the same folder with path defined in KEY_PATH_PUBLIC
+    There should be two files, the public key to import into AWS (xxx.pub), and public/private keypair
+    you will use to SSH (or puTTY) into the instance (xxx.pem)
+    Place the name of your keypair in the static variable 'KEY_NAME'.
+    If you need to generate a new key pair, the code is: (untested)
+            outfile = open('TestKey.pem','w')
+            key_pair = ec2.create_key_pair(KeyName='TestKey')
+            KeyPairOut = str(key_pair.key_material)
+            outfile.write(KeyPairOut)
+            
+    3.  Assumes you have OpenVPN GUI installed, and you've placed your config files
+    in C:\Program Files\OpenVPN\config\ and that you have an environmental variable set
+    to the executable openvpn-gui.exe
+    you can download OpenVPN GUI here: https://openvpn.net/community-downloads/
+    
+    4.  (for Robert's code) Assumes you have puTTY and puTTY Secure Cooy (pscp) installed
+    They can be found here: https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+    
+    5.  (for John's code) assumes you have paramiko.  If not, just pip install paramiko
+    
+    
+    
+    
+TO DO:
+    a. [done] configure instance security groups
+    b. [done] provide any other configuration needed (for example, run through the initial OpenVPN start-up and configuration menus)
+    c. collect metrics on the instance (for billing purposes)
+    d. [done] provide functions to stop, start, and terminate the instance [need some more automation]
+    e. [done] provide capability to start a snapshot versus instance (this would allow us to preconfigure the instance)
+    e2. [done] We'll need to decide how we want to snapshot the instances (snapshot, AMI, template), and what configuration is
+        required after they are instantiated
+    f. [done, just uses existing keys for now] generate new keys, add to the region, provide to the user
+    g. Determine if we will centrally manage the instances.  If so, how will that be communicated to the clients
+    h. [done] Do we need AMI IDs for each region? are there general ones we can use, or can we push our own
+    i. Need to push clone image into other Regions
+    
+    
+This version includes:
+    (a) standing up a server based on a snapshot ImageId (AMI ID), add security group, code to start, stop, terminate
+    (b) moved code into def functions to ease use, maintenance, and expandability
+    (c) capability to stand-up and link multiple servers
+    (d) created clone AMIs fore each region
+
+
+AWS EC2 availability zones: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html
+    us-east-1 : US East (N. Virginia)
+    us-east-2 : US East (Ohio)
+    us-west-1 : US West (N. California)
+    us-west-2 : US West (Oregon)
+    ca-central-1 : Canada (Central)
+    eu-central-1 : EU (Frankfurt)
+    eu-west-1 : EU (Ireland)
+    eu-west-2 : EU (London)
+    eu-west-3 : EU (Paris)
+    eu-north-1 : EU (Stockholm)
+    ap-east-1 : Asia Pacific (Hong Kong)
+    ap-northeast-1 : Asia Pacific (Tokyo)
+    ap-northeast-2 : Asia Pacific (Seoul)
+    ap-northeast-3 : Asia Pacific (Osaka-Local)
+    ap-southeast-1 : Asia Pacific (Singapore)
+    ap-southeast-2 : Asia Pacific (Sydney)
+    ap-south-1 : Asia Pacific (Mumbai)
+    sa-east-1 : South America (São Paulo)
+    
+    
+"""
+
+import boto3
+import logging
+from botocore.exceptions import ClientError
+import time
+import os
+import time
+# for the shell command via Boto approach.  Need pramiko installed: pip install paramiko
+import boto.ec2
+from boto.manage.cmdshell import sshclient_from_instance
+import paramiko
+import time
+
+
+# initialize variables, be sure to set these to match your configuration =======
+# when we clean up the code we'll make sure this is handled for the user
+KEY_NAME = 'linuxAMI2018v1' # for standing up a new server (for example virgkey). Don't include the .pem extension.  This is what you want your key to be called in AWS
+KEY_NAME_PUBLIC_IMPORT = 'linuxAMI2018v1.pub' # for use in the server key import scripts. Just the public key.  This is imported into AWS. Should match KEY_NAME, just with the .pub extension
+KEY_PATH_PUBLIC = 'c:\\Users\\johnb'  # path for your public key above
+KEY_NAME_SHELL = 'linuxAMI2018v1.pem' # for use in the shell scripts. Same as KEY_NAME, just with the .pem extension, used to log into the server once instantiated
+KEY_PATH = 'c:\\Users\\johnb'  # for your key above
+SERVER_KEY_PATH = 'c:\\Users\\johnb\\serverkeys' # the path where you've stored your server keys (ca, client, server, dh2048)
+
+# ======= end of clent variable input
+
+
+# old variables, remove when code is cleaned up ==========
+REGION_ID = 'us-east-2'
+# based on my OpenVPN Launch Instance
+IMAGE_ID = 'ami-04f63e8f7a845159a'
+
+# Two image IDs, one for an OpenVPN server, one for a Port Forwarding server:
+IMAGE_ID_OVPN = 'ami-04f63e8f7a845159a' # OpenVPN server from us-east-2
+IMAGE_ID_PF = 'ami-026c8acd92718196b' # from Robert's code, works in us-east-1
+# ==========
+
+# Set the same Security Group ID name (and permissions) for all servers:
+SEC_GRP = 'CS403AlphaVPN'
+
+#SEC_GRP = 'OpenVPN Access Server-2-6-1a-AutogenByAWSMP-'
+
+# this is just a short list right now while we test
+listORegions = ('us-east-1', 'us-east-2', 'eu-north-1', 'ap-northeast-1', 'us-west-2')
+
+listOSupportedRegions = {
+    '1' : 'US East (N. Virginia)',
+    '2' : 'US East (Ohio)',
+    '3': 'US West (N. California)',
+    '4' : 'US West (Oregon)',
+    #ca-central-1 : Canada (Central),
+    #eu-central-1 : EU (Frankfurt),
+    #eu-west-1 : EU (Ireland),
+    #eu-west-2 : EU (London),
+    #eu-west-3 : EU (Paris),
+    '5' : 'EU (Stockholm)',
+    #ap-east-1 : Asia Pacific (Hong Kong),
+    '6' : 'Asia Pacific (Tokyo)',
+    #ap-northeast-2 : Asia Pacific (Seoul),
+    #ap-northeast-3 : Asia Pacific (Osaka-Local),
+    #ap-southeast-1 : Asia Pacific (Singapore),
+    #ap-southeast-2 : Asia Pacific (Sydney),
+    #ap-south-1 : Asia Pacific (Mumbai),
+    #sa-east-1 : South America (São Paulo),
+        }
+
+listOfRegionAMIs = {
+    'us-east-1':'ami-026c8acd92718196b',  #US East (N. Virginia)
+    'us-east-2':'ami-0986c2ac728528ac2',  #US East (Ohio)
+    'us-west-1' : 'ami-07b4f3c02c7f83d59',  #US West (N. California)
+    'us-west-2' : 'ami-07b4f3c02c7f83d59',  #US West (Oregon)
+    #'ca-central-1' : 'ami',  #Canada (Central)
+    #'eu-central-1' : 'ami',  #EU (Frankfurt)
+    #'eu-west-1' : 'ami',  #EU (Ireland)
+    #'eu-west-2' : 'ami',  #EU (London)
+    #'eu-west-3' : 'ami',  #EU (Paris)
+    #'eu-north-1' : 'ami-88de55f6',  #EU (Stockholm)
+    #'ap-east-1' : 'ami',  #Asia Pacific (Hong Kong)
+    'ap-northeast-1' : 'ami-09b68f5653871885f',  #Asia Pacific (Tokyo)
+    #'ap-northeast-2' : 'ami',  #Asia Pacific (Seoul)
+    #'ap-northeast-3' : 'ami',  #Asia Pacific (Osaka-Local)
+    #'ap-southeast-1' : 'ami',  #Asia Pacific (Singapore)
+    #'ap-southeast-2' : 'ami',  #Asia Pacific (Sydney)
+    #'ap-south-1' : 'ami',  #Asia Pacific (Mumbai)
+    #'sa-east-1' : 'ami',  #South America (São Paulo)
+}
+
+# these are a list of the AMIs in eash region matching our pre-built server
+listOfCloneRegionAMIs = {
+    'us-east-1':'ami-09b7d9dc1d9970a17',  #US East (N. Virginia)
+    'us-east-2':'ami-03b0133f3a2c80ca0',  #US East (Ohio)
+    'us-west-1' : 'ami-0fe0063588f396d8b',  #US West (N. California)
+    'us-west-2' : 'ami-0a4efc762fdaf420c',  #US West (Oregon)
+    #'ca-central-1' : 'ami',  #Canada (Central)
+    #'eu-central-1' : 'ami',  #EU (Frankfurt)
+    #'eu-west-1' : 'ami',  #EU (Ireland)
+    #'eu-west-2' : 'ami',  #EU (London)
+    #'eu-west-3' : 'ami',  #EU (Paris)
+    'eu-north-1' : 'ami-0f65f772ed1f4fbd4',  #EU (Stockholm)
+    #'ap-east-1' : 'ami',  #Asia Pacific (Hong Kong)
+    'ap-northeast-1' : 'ami-0889ee8d3f9fa35bd',  #Asia Pacific (Tokyo)
+    #'ap-northeast-2' : 'ami',  #Asia Pacific (Seoul)
+    #'ap-northeast-3' : 'ami',  #Asia Pacific (Osaka-Local)
+    #'ap-southeast-1' : 'ami',  #Asia Pacific (Singapore)
+    #'ap-southeast-2' : 'ami',  #Asia Pacific (Sydney)
+    #'ap-south-1' : 'ami',  #Asia Pacific (Mumbai)
+    #'sa-east-1' : 'ami',  #South America (São Paulo)
+}
+
+def getAMI(argument):
+    # takes a Region ID (string)
+    # returns an AMI (string) appropriate for that Region
+    # if the argument does not match one of the Region IDs in dictionary listOfRegionAMIs,
+    # returns 'invalid selection' (string)
+    return listOfRegionAMIs.get(argument, "invalid selection")
+
+def getCloneAMI(argument):
+    # takes a Region ID (string)
+    # returns an AMI (string) appropriate for that Region
+    # if the argument does not match one of the Region IDs in dictionary listOfRegionAMIs,
+    # returns 'invalid selection' (string)
+    return listOfCloneRegionAMIs.get(argument, "invalid selection")
+
+
+def CreateInstance(ec2Resource, imageID, securityGroupID):
+    instance = ec2Resource.create_instances(
+            ImageId=imageID,
+            MinCount=1,
+            MaxCount=1,
+            KeyName=KEY_NAME,
+            InstanceType='t2.micro',
+            SecurityGroups=[securityGroupID]
+            )
+    
+    #TO-DO: (perhaps?) store this info in a database, along with getInstanceDetails
+    # so we can look it up and retrieve it later
+    return instance[0].id
+
+def getInstanceDetails(ec2Resource, instanceID):
+    instance = ec2Resource.Instance(instanceID)
+    return instance.id, instance.instance_type, instance.public_ip_address, instance.private_ip_address, instance.launch_time
+# TO-DO What else do we need to know about the instance?
+
+def startInstance(ec2Client, instanceID):
+    try:
+        response = ec2Client.start_instances(InstanceIds=[instanceID], DryRun=False)
+        print(response)
+    except ClientError as e:
+        print(e)
+    return
+
+def stopInstance(ec2Client, instanceID):
+    try:
+        response = ec2Client.stop_instances(InstanceIds=[instanceID], DryRun=False)
+        print(response)
+    except ClientError as e:
+        print(e)
+    return
+
+def terminateInstance(ec2Client, instanceID):
+    try:
+        response = ec2Client.terminate_instances(InstanceIds=[instanceID], DryRun=False)
+        print(response)
+    except ClientError as e:
+        print(e)
+    return
+
+# Robert's code to set up a Security Group, with a little error checking added
+def setSecurityGroup(ec2Client, securityGroupName):
+    secGrpExists = False # used to determine if the security group exists
+    vpcResponse = ec2Client.describe_vpcs()
+    vpc_id = vpcResponse.get('Vpcs', [{}])[0].get('VpcId', '')
+
+    # check to see if security group already exists
+    for security_group_resp in ec2Client.describe_security_groups()['SecurityGroups']:
+        if security_group_resp['GroupName'] == securityGroupName:
+             answer = print('already exists, ID is: '+str(security_group_resp['GroupId']))
+             secGrpExists = True
+             return answer
+         
+    if secGrpExists == False: # the security group does not already exist
+        securityGroupResponse = ec2Client.create_security_group(GroupName=securityGroupName,
+                                         Description='for CS403 Group Alpha VPNs',
+                                         VpcId=vpc_id)
+        security_group_id = securityGroupResponse['GroupId']
+        #print('Security Group Created %s in vpc %s.' % (security_group_id, vpc_id))
+    
+        data = ec2Client.authorize_security_group_ingress(
+            GroupId=security_group_id,
+            IpPermissions=[
+                {'IpProtocol': 'tcp',
+                 'FromPort': 22,
+                 'ToPort': 22,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+                {'IpProtocol': 'udp',
+                 'FromPort': 1194,
+                 'ToPort': 1194,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
+            ])
+        
+        return security_group_id
+
+def setUpAllSecurityGroups():
+    for i in listORegions:
+        ec2c = boto3.client(
+                    'ec2',
+                    region_name = i)
+        secGrpName = 'CS403AlphaVPN'
+        print('===== \nSecurity Group for '+ str(i) + ': ')
+        print('   '+str(setSecurityGroup(ec2c, secGrpName)))
+    return
+
+def deleteSecurityGroup(region, securityGroupID, groupName):
+    # this should be used just in testing
+    # if you attempt to delete a security group in use by an instance there will be an error
+    
+    ec2c = boto3.client(
+                    'ec2',
+                    region_name = region)
+    
+    securityGroupResponse = ec2c.delete_security_group(GroupId=securityGroupID,
+                                                             GroupName=groupName,
+                                                             DryRun=False
+                                                            )
+    return
+
+def importKeys(ec2Client):
+    # read the public key in from a file and import it into the region
+    # key file should be at path defined in KEY_PATH_PUBLIC
+    # key file name in static variable KEY_NAME_PUBLIC_IMPORT
+    
+    # instantiate variables
+    wholeKey = ''    
+    keyFileAt = KEY_PATH_PUBLIC + '\\' + KEY_NAME_PUBLIC_IMPORT
+
+    # open the file and read in the public key
+    with open(keyFileAt, "r") as f:
+    
+        for line_of_text in f:
+            wholeKey = wholeKey + line_of_text
+
+    b = wholeKey.encode('utf-8')
+
+    # check to see if the keypair already exists in this region
+    if KEY_NAME in str(ec2Client.describe_key_pairs()):
+        print('===== keypair already exists =====')
+        
+    else:
+        response = ec2Client.import_key_pair(
+                DryRun=False,
+                KeyName=KEY_NAME,
+                PublicKeyMaterial=b
+        )
+     
+        print(str(response) +'\n===== keypair imported =====')
+        
+def configureVPNServerViaOS(myOVPNIP):
+    # configure the VPN server (from Robert's code)
+    shellSTR='cd '+str(KEY_PATH)+' && ssh -i '+str(KEY_NAME_SHELL)+' -o "StrictHostKeyChecking=no" ubuntu@'+str(myOVPNIP) + ' "sudo apt-get update"'
+    os.system(shellSTR)
+    time.sleep(10)
+    shellSTR='cd '+str(KEY_PATH)+' && ssh -i '+str(KEY_NAME_SHELL)+' -o "StrictHostKeyChecking=no" ubuntu@'+str(myOVPNIP) + ' "sudo apt-get install -y openvpn"'
+    os.system(shellSTR)
+    time.sleep(10)
+    shellSTR='cd '+str(KEY_PATH)+' && ssh -i '+str(KEY_NAME_SHELL)+' -o "StrictHostKeyChecking=no" ubuntu@'+str(myOVPNIP) + ' "sudo chmod -R 777 /etc/openvpn"'
+    os.system(shellSTR)
+    #shellSTR='cd '+str(KEY_PATH)+' && pscp -i '+str(KEY_NAME_SHELL)+' '+str(SERVER_KEY_PATH)+'\\* ubuntu@'+str(myOVPNIP)+':/etc/openvpn'
+    shellSTR='cd '+str(KEY_PATH)+' && pscp -i '+str(KEY_NAME_SHELL)+' -r '+str(SERVER_KEY_PATH)+'\\dh2048.pem ubuntu@'+str(myOVPNIP)+':/etc/openvpn'
+    os.system(shellSTR)
+    time.sleep(10)
+    
+    shellSTR='cd '+str(KEY_PATH)+' && ssh -i '+str(KEY_NAME_SHELL)+' -o "StrictHostKeyChecking=no" ubuntu@'+str(myOVPNIP)+' "sudo sysctl net.ipv4.ip_forward=1;sudo iptables -t nat -A POSTROUTING -j MASQUERADE"'
+    os.system(shellSTR)
+    shellSTR='cd '+str(KEY_PATH)+' && ssh -i '+str(KEY_NAME_SHELL)+' -o "StrictHostKeyChecking=no" ubuntu@'+str(myOVPNIP)+' "sudo openvpn /etc/openvpn/server.conf"'
+    os.system(shellSTR)
+    
+    return
+
+def configureHopServerViaOS(myDestinationIP, myHopIP):
+    # In a two hop configuration, the destination IP is myOVPNIP (the IP of the VPN Server)
+    #   and my HopIP is the IP of the hop server
+    # so this forwards traffic from myHopIP to myDestinationIP
+    # configure port fowarding (Robert's code)
+    shellSTR='cd '+str(KEY_PATH)+' && ssh -i '+str(KEY_NAME_SHELL)+' -o "StrictHostKeyChecking=no" ubuntu@'+str(myHopIP) + ' "sudo sysctl net.ipv4.ip_forward=1; sudo iptables -t nat -A PREROUTING -p udp --dport 1194 -j DNAT --to-destination '+str(myDestinationIP)+':1194; sudo iptables -t nat -A POSTROUTING -j MASQUERADE"'
+    os.system(shellSTR)
+    return
+
+def writeOPVNViaOS(myOVPNIP):
+    #write config file and run (from Robert's file)
+    ovpnString = "client\ndev tun\nproto udp\nremote "+str(myOVPNIP)+" 1194\nresolv-retry infinite\nnobind\npersist-key\npersist-tun\nca " + str(SERVER_KEY_PATH) + "\\ca.crt\ncert " + str(SERVER_KEY_PATH) + "\\client.crt\nkey " + str(str(SERVER_KEY_PATH)) + "\\client.key\nremote-cert-tls server\ncipher AES-256-CBC\nverb 3"
+    print('=====')
+    print('If for some reason your client101.ovpn file is not created')
+    print('copy the following into notepad, save as client101.ovpn')
+    print('======= for your .ovpn file =======')
+    print(ovpnString)
+    print('===================================')
+    try:
+        filepath = "C:/Program Files/OpenVPN/config/client101.ovpn"
+        fout = open(filepath, "w+")
+        fout.write(ovpnString)
+        fout.close()
+    except IOError:
+        msg = ("Unable to create file on disk.")
+    
+    print('VPN started, enjoy!')
+    # connect to VPN
+    os.system('openvpn-gui.exe --connect "client101.ovpn"')
+    
+    return
+    
+def configureVPNServerViaBoto(myOVPNIP, REGION_ID, myID):
+    session = boto3.Session()
+    ec2 = session.resource('ec2', region_name=REGION_ID)
+    i = ec2.Instance(id=myID) # instance id
+    k = paramiko.RSAKey.from_private_key_file(KEY_NAME+'.pem') #your private key for ssh
+    c = paramiko.SSHClient()
+    c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    print ("\nConnecting to shell using ssh")
+    # c.connect( hostname =i.public_dns_name, username = "ubuntu", pkey = k )
+    c.connect( hostname = myOVPNIP, username = "ubuntu", pkey = k )
+
+    #print("At Masquerade at --- %s seconds ---" % (time.time() - start_time))
+    stdin , stdout, stderr = c.exec_command("sudo iptables -t nat -A POSTROUTING -j MASQUERADE")
+    #print("start server at --- %s seconds ---" % (time.time() - start_time))
+    stdin , stdout, stderr = c.exec_command("sudo openvpn /etc/openvpn/server.conf")
+    c.close()
+    return
+
+def configureHopServerViaBoto(myDestinationIP, myHopIP, REGION_ID, myID):
+    # In a two hop configuration, the destination IP is myOVPNIP (the IP of the VPN Server)
+    #   and myHopIP is the IP of the hop server
+    # so this forwards traffic from myHopIP to myDestinationIP
+    session = boto3.Session()
+    ec2 = session.resource('ec2', region_name=REGION_ID)
+    i = ec2.Instance(id=myID) # instance id
+    k = paramiko.RSAKey.from_private_key_file(KEY_NAME+'.pem') #your private key for ssh
+    c = paramiko.SSHClient()
+    c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    print ("\nConnecting to shell using ssh")
+    c.connect( hostname =i.public_dns_name, username = "ubuntu", pkey = k )
+
+    #print("At Masquerade at --- %s seconds ---" % (time.time() - start_time))
+    stdin , stdout, stderr = c.exec_command('sudo iptables -t nat -A PREROUTING -p udp --dport 1194 -j DNAT --to-destination '+str(myDestinationIP)+':1194')
+    stdin , stdout, stderr = c.exec_command("sudo iptables -t nat -A POSTROUTING -j MASQUERADE")
+    return
+
+def writeOPVNViaBoto(myOVPNIP):
+    # TO DO
+    # not yet written, so for now use the same code as the OS approach
+    writeOPVNViaOS(myOVPNIP)
+    
+    return
+
+def startANewVPN():
+    locationLastHop = ''
+    print('====================')
+    print("===== Let's get your VPN started =====")
+    # get number of hops (servers)
+    numberOfHops = input('How many hops (1-3)?  ')
+    #print list of Region IDs, and get Region ID selection
+    print('Regions available:')
+    for key, value in listOSupportedRegions.items() :
+        print(key,': ',value)
+    aNum = int(input('Which region?  '))
+    supportedRegions = ('us-east-1',
+        'us-east-2',
+        'us-west-1',
+        'us-west-2',
+        'eu-north-1',
+        'ap-northeast-1')
+    locationLastHop = supportedRegions[aNum-1]
+
+    # testing two approaches
+    # the OS approach uses os.system to launch shell commands
+    # the Boto approach used Paramiko and sshclient_from_instance
+    # testing the functionality of both to support a downselect
+    print('===== select approach =====')
+    print('[O]S approach: uses os.system to launch shell commands')
+    print('[B]oto approach: uses Boto and paramiko to launch shell commands')
+    approach = (input('Which approach would you like to use?') or 'o') # defaults to OS if user just hits enter
+    approach = approach.lower() # get this in lowercase so we don't need to worry about capitalization
+    
+    #assign appropriate AMI for the region, and based on the approach
+    if approach == 'o':
+        imageIDConditional = getAMI(locationLastHop)
+    elif approach == 'b':
+        imageIDConditional = getCloneAMI(locationLastHop)
+        
+    # start the timer to collect timing data
+    start_time = time.time()
+    
+    # get a resource and client appropriate for the Region
+    ec2NR = boto3.resource(
+                        'ec2',
+                        region_name = locationLastHop
+                        )
+    ec2cNR = boto3.client(
+                    'ec2',
+                    region_name = locationLastHop
+                    )
+    
+    # complete pre-reqs -- import keys
+    importKeys(ec2cNR)
+    
+    # complete pre-reqs -- configure security groups
+    secGrpName = 'CS403AlphaVPN'
+    print('===== Security Group ID for '+ locationLastHop + ' =====')
+    print('   '+str(setSecurityGroup(ec2cNR, secGrpName)))
+    
+    # first, create an OpenVPN instance, and log it
+    print('===== setting up OpenVPN server ===== \n===== this will take a few seconds =====')
+    myInstanceID = (CreateInstance(ec2NR, imageIDConditional, SEC_GRP))
+    myOVPNInstance = ec2NR.Instance(myInstanceID)
+    myOVPNInstance.wait_until_running()
+    myOVPNIP = myOVPNInstance.public_ip_address
+    
+    if approach == 'o':
+        configureVPNServerViaOS(myOVPNIP)
+        print("VPN server configured --- %s seconds ---" % (time.time() - start_time))
+        if numberOfHops == '1':
+            writeOPVNViaOS(myOVPNIP)
+    
+    if approach == 'b':
+        # TO DO
+        configureVPNServerViaBoto(myOVPNIP, locationLastHop, myInstanceID)
+        print("VPN server configured --- %s seconds ---" % (time.time() - start_time))
+        if numberOfHops == '1':
+            writeOPVNViaBoto(myOVPNIP)
+    
+    print("VPN server complete --- %s seconds ---" % (time.time() - start_time))
+    print('=======\nVPN Server :', myInstanceID, myOVPNIP)
+    
+    # if two hops, also create a port forwarding VM, forwarding to the OpenVPN VM
+    if (numberOfHops == '2') or (numberOfHops == '3'):
+        print('setting up Hop server as: ')
+        myInstanceID2 = (CreateInstance(ec2NR, imageIDConditional, SEC_GRP))
+        myHopInstance = ec2NR.Instance(myInstanceID2)
+        myHopInstance.wait_until_running()
+        myHopIP = myHopInstance.public_ip_address
+        print("Hop1 server initialized --- %s seconds ---" % (time.time() - start_time))
+        print('=======\nHop Server :',myInstanceID2, myHopIP)
+        
+        if approach == 'o':
+            configureHopServerViaOS(myOVPNIP, myHopIP)
+            print("Hop1 server configured --- %s seconds ---" % (time.time() - start_time))
+            if numberOfHops == '2':
+                writeOPVNViaOS(myHopIP)
+                return
+                
+        if approach == 'b':
+            # TO DO
+            configureHopServerViaBoto(myOVPNIP, myHopIP, locationLastHop, myInstanceID2)
+            print("Hop1 server configured --- %s seconds ---" % (time.time() - start_time))
+            if numberOfHops == '2':
+                writeOPVNViaBoto(myHopIP)
+                return
+        
+        # if three hops, rinse and repeat step 2
+        if (numberOfHops == '3'):
+            print('setting up Hop server #2 as: ')
+            myInstanceID3 = (CreateInstance(ec2NR, imageIDConditional, SEC_GRP))
+            myHopInstance3 = ec2NR.Instance(myInstanceID3)
+            myHopInstance3.wait_until_running()
+            myHopIP3 = myHopInstance3.public_ip_address
+            print("Hop2 server initialized --- %s seconds ---" % (time.time() - start_time))
+            print('=======\nHop Server #2:',myInstanceID3, myHopIP3)
+        
+            if approach == 'o':
+                configureHopServerViaOS(myHopIP, myHopIP3)
+                print("Hop2 server configured --- %s seconds ---" % (time.time() - start_time))
+                writeOPVNViaOS(myHopIP3)
+                return
+                    
+            if approach == 'b':
+                # TO DO
+                configureHopServerViaBoto(myHopIP, myHopIP3, locationLastHop, myInstanceID3)
+                print("Hop2 server configured --- %s seconds ---" % (time.time() - start_time))
+                writeOPVNViaBoto(myHopIP3)
+                return
+        
+        return
+        
+    
+    return 'VPN started, enjoy!'
+
+
+# ********************
+# get user input
+# this will be replaced by an interface to Jeremy's code
+# this is just a placeholder for now to facilitate testing
+# TO DO: work interface with Jeremy
+
+choice=''
+
+while choice != 'q':
+    print('\n' +
+          '******* \n' +
+          'Options: \n' +
+          '[s] Start a new VPN \n' +
+          '[g] Get Instance info \n' +
+          '[t] Terminate an instance \n'
+          '[x] Set up all Security Groups \n'
+          '[d] Delete a Security Group \n'
+          '[k] Import a key \n'
+          '[q] Quit'
+          )
+    choice = input('What do you want to do? ')
+    
+    if choice == 's':
+        #print(CreateInstance(ec2, IMAGE_ID, secGrpID))
+        print(startANewVPN())
+    elif choice == 'g':
+        myInstance = input('What is the InstanceID?')
+        r = input('Region ID?')
+        ec2 = boto3.resource(
+                    'ec2',
+                    region_name = r
+                    )
+        print(getInstanceDetails(ec2, myInstance))
+    elif choice == 't':
+        myInstance = input('What is the InstanceID?')
+        r = input('Region ID?')
+        ec2c = boto3.client(
+                    'ec2',
+                    region_name = r
+                    )
+        print(terminateInstance(ec2c, myInstance))
+    elif choice == 'x':
+        setUpAllSecurityGroups()
+    elif choice == 'd':
+        r = input('Region ID?')
+        sg = input('Security Group ID?')
+        gn = input('Group Name?')
+        deleteSecurityGroup(r, sg, gn)
+    elif choice == 'k':
+        r = input('Region ID?')
+        ec2c = boto3.client(
+                    'ec2',
+                    region_name = r
+                    )
+        print(importKeys(ec2c))

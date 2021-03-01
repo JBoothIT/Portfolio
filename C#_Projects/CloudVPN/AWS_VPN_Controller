@@ -1,0 +1,187 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jul  2 15:40:19 2019
+
+@author: John Bedingfield
+This code is a controller to manage the VPN instances
+It takes user input and stands up AWS EC2 instances appropriately.
+It also allows the instances to be terminated
+
+
+This code assumes:
+    1. Your AWS account public and private keys are in default location at ~/.aws/credentials:
+    in a file called 'credentials/txt', and in the following format:
+            [default]
+            aws_access_key_id = KEYHERE...
+            aws_secret_access_key = KEYHERE...
+    
+    2. You want to stand-up the instance in the location defined in the static
+    variable REGION_ID
+    
+    3.  You want to stand-up a new OpenVPN instance, which has a AMI ID (IMAGE_ID) of ami-04f63e8f7a845159a
+    If you want to stand-up a different kind of instance, find the AMI ID for that instance,
+    (make sure it matches the region) and change IMAGE_ID static variable to reflect the new AMI Id
+    
+    4.  Place your server keypair (xxx.pem) file in the same folder as this code, and 
+    place the name of your keypair in the static variable 'KEY_NAME'.
+    If you need to generate a new key pair, the code is: (untested)
+            outfile = open('TestKey.pem','w')
+            key_pair = ec2.create_key_pair(KeyName='TestKey')
+            KeyPairOut = str(key_pair.key_material)
+            outfile.write(KeyPairOut)
+    
+TO DO:
+    a. [done] configure instance security groups
+    b. provide any other configuration needed (for example, run through the initial OpenVPN start-up and configuration menus)
+    c. collect metrics on the instance (for billing purposes)
+    d. [done] provide functions to stop, start, and terminate the instance
+    e. [done] provide capability to start a snapshot versus instance (this would allow us to preconfigure the instance)
+    e2. We'll need to decide how we want to snapshot the instances (snapshot, AMI, template), and what configuration is
+        required after they are instantiated
+    
+This version includes:
+    (a) standing up a server based on a snapshot ImageId (AMI ID), add security group, code to start, stop, terminate
+    (b) moved code into def functions to ease use, maintenance, and expandability
+
+
+AWS EC2 availability zones: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html
+    us-east-1 : US East (N. Virginia)
+    us-east-2 : US East (Ohio)
+    us-west-1 : US West (N. California)
+    us-west-2 : US West (Oregon)
+    ca-central-1 : Canada (Central)
+    eu-central-1 : EU (Frankfurt)
+    eu-west-1 : EU (Ireland)
+    eu-west-2 : EU (London)
+    eu-west-3 : EU (Paris)
+    eu-north-1 : EU (Stockholm)
+    ap-east-1 : Asia Pacific (Hong Kong)
+    ap-northeast-1 : Asia Pacific (Tokyo)
+    ap-northeast-2 : Asia Pacific (Seoul)
+    ap-northeast-3 : Asia Pacific (Osaka-Local)
+    ap-southeast-1 : Asia Pacific (Singapore)
+    ap-southeast-2 : Asia Pacific (Sydney)
+    ap-south-1 : Asia Pacific (Mumbai)
+    sa-east-1 : South America (São Paulo)
+    
+    
+"""
+
+import boto3
+import logging
+from botocore.exceptions import ClientError
+
+# initialize variables
+REGION_ID = 'us-east-2'
+#REGION_ID = 'ap-southeast-2'
+KEY_NAME = 'linuxAMI2018v1'
+
+# to stand-up a default OpenVPN Server, which then needs to be configured,
+# use this AMI ID
+#IMAGE_ID = 'ami-04f63e8f7a845159a'
+
+# based on my OpenVPN Launch Instance
+IMAGE_ID = 'ami-04f63e8f7a845159a'
+
+# created AMI based on image to test whether all configs were copied
+# it copied all config items, even the old server name (old IP address)
+# so this will not work for our purposes
+# IMAGE_ID = 'ami-06bf00a264fc5e29b'
+
+# image in Sydney
+# not yet working, perhaps security groups?
+# IMAGE_ID = 'ami-0f46bcb3e9de84a48'
+
+SEC_GRP = 'OpenVPN Access Server-2-6-1a-AutogenByAWSMP-'
+
+# testing instantiation from a snapshot
+SNAP_ID = 'snap-077f1d5fd5b13f221'
+
+
+def CreateInstance(ec2Resource, imageID):
+    instance = ec2Resource.create_instances(
+            ImageId=imageID,
+            MinCount=1,
+            MaxCount=1,
+            KeyName=KEY_NAME,
+            InstanceType='t2.micro',
+            SecurityGroups=[SEC_GRP]
+            )
+    
+    #TO-DO: store this info in a database, along with getInstanceDetails
+    # so we can look it up and retrieve it later
+    return instance[0].id, instance[0].instance_type
+
+def getInstanceDetails(ec2Resource, instanceID):
+    instance = ec2Resource.Instance(instanceID)
+    return instance.id, instance.instance_type, instance.public_ip_address, instance.private_ip_address
+# TO-DO What else do we need to know about the instance?
+
+def startInstance(ec2Client, instanceID):
+    try:
+        response = ec2Client.start_instances(InstanceIds=[instanceID], DryRun=False)
+        print(response)
+    except ClientError as e:
+        print(e)
+    return
+
+def stopInstance(ec2Client, instanceID):
+    try:
+        response = ec2Client.stop_instances(InstanceIds=[instanceID], DryRun=False)
+        print(response)
+    except ClientError as e:
+        print(e)
+    return
+
+def terminateInstance(ec2Client, instanceID):
+    try:
+        response = ec2Client.terminate_instances(InstanceIds=[instanceID], DryRun=False)
+        print(response)
+    except ClientError as e:
+        print(e)
+    return
+
+
+# *****
+# set-up a resource
+     # TO-DO:  Since this is region specific, we'll need a function to set
+     # these up based on region
+ec2 = boto3.resource(
+                    'ec2',
+                    region_name = REGION_ID
+                    )
+
+# set-up a client
+ec2c = boto3.client(
+                    'ec2',
+                    region_name = REGION_ID)
+
+
+# *****
+# get user input
+# this will be replaced by an interface to Jeremy's code
+# this is just a placeholder for now to facilitate testing
+# TO DO: work interface with Jeremy
+
+choice=''
+
+while choice != 'q':
+    print('\n' +
+          '******* \n' +
+          'Options: \n' +
+          '[s] Start a new VPN \n' +
+          '[g] Get Instance info \n' +
+          '[t] Terminate an instance \n'
+          '[q] Quit'
+          )
+    choice = input('What do you want to do? ')
+    
+    if choice == 's':
+        print(CreateInstance(ec2, IMAGE_ID))
+    elif choice == 'g':
+        myInstance = input('What is the InstanceID?')
+        print(getInstanceDetails(ec2, myInstance))
+    elif choice == 't':
+        myInstance = input('What is the InstanceID?')
+        print(terminateInstance(ec2c, myInstance))
+        

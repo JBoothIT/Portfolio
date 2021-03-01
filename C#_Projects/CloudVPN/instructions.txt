@@ -1,0 +1,19 @@
+This needs to be done for it to work:
+OpenVPN GUI must be installed and not running. 
+OpenVPN GUI added to environment variables for CMD
+.ovpn auto login profile needs to be in C:\Program Files\OpenVPN\config
+
+
+Python code works by running a CMD command that points to the OpenVPN GUI set in environment variables and connects with the given profile.
+
+
+Needs to be done:
+OS check
+Checks for OpenVpn running and closes if it is
+Checks for OpenVPn in path?
+Added functionalities: multihops
+Gui?
+
+
+
+
