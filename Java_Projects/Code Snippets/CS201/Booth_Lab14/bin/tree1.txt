@@ -1,0 +1,21 @@
+.
+insl Y
+insl 9
+insr Q
+L
+insl T
+insr 4
+R
+insl D
+insr N
+L
+insl 7
+insr A
+.
+R
+insr E
+R
+insr K
+R
+insl H
+insr G

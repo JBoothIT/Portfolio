@@ -1,0 +1,15 @@
+Isaac Newton,101-257-1009
+Archimedes,103-251-1013
+Carl F. Gauss,107-241-1019
+Leonhard Euler,109-239-1021
+Bernhard Riemann,113-233-1031
+Euclid,127-229-1033
+Henri Poincare,131-227-1039
+Joseph Louis Lagrange,137-223-1049
+David Hilbert,139-211-1051
+Gottfried W. Leibniz,149-199-1061
+Alexandre Grothendieck,151-197-1063
+Pierre de Fermat,157-193-1069
+Niels Abel,163-191-1087
+Evariste Galois,167-181-1091
+John von Neumann,173-179-1093
