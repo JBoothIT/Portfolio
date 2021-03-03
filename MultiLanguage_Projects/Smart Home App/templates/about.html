@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}About Us{% endblock %}
+{% block styles %}
+<style>
+#mainDiv {
+	height: 100%;
+    width: 100%;
+    overflow: auto;
+}
+.container {
+	<!-- height: 100%; -->
+	width: 100%;
+	padding: 0 16px;
+
+}
+.container::after,
+.row::after {
+	content: "";
+	clear: both;
+	display: table;
+	color: #F9F9F9;;
+}
+
+.title {
+	color: grey;
+}
+.carouselExampleCaptions {
+	
+}
+.carousel-item, img{
+	height:750px!important;
+	border-radius: 50px;
+	border: 10px solid #555; 
+}
+
+.carousel-control-prev {
+background-color: gray;
+border-radius: 35px;
+width: 10%;
+}
+.carousel-control-next {
+background-color: gray;
+border-radius: 35px;
+width: 10%;
+}
+.about-section p {
+color: #3A4347;
+}
+.cfont {
+	color: #F9F9F9;;
+	font-weight: bold;
+}
+.cfont1 {
+	color: black;
+	font-weight: bold;
+}
+#about {
+	height: 705px;
+	width: 1108px;
+	background-color: #F9F9F9;
+	margin: 32px auto;
+	margin-bottom: 128px;
+	border-radius: 16px;
+}
+#aboutText {
+	margin: 0 96px;
+}
+#service {
+	width: 1000px;
+	background-color: #F2C63D;
+	margin: 32px auto;
+	border-radius: 16px;
+	padding: 16px 64px;
+}
+#goal {
+	width: 1108px;
+	background-color: #CD5D70;
+	padding: 32px;
+	margin: 32px auto;
+	border-radius: 16px;
+}
+</style>
+{% endblock %} {% block content %}
+<!-- <div id=mainDiv> -->
+	<div class="about-section" id="about">
+		<h1 style="text-align: center; color:#BC920D; margin-bottom: 0;"><b>Why Invest in a Smart Home App?</b></h1>
+		<div id="aboutText">
+			<h4 style="text-align: justify;">
+				<br>
+				<p>Many potential customers ask our sales team the same quesion: 
+				   <em><large>Why</large> invest in a smart home?</em>  
+				</p><br>
+				<p>Over the years, the number of Smart Home users has increased by huge margins. Since 2018, the Smart Home market has grown from <em>$76.6 billion</em> to an estimated <em>$151.4 billion</em> by 2024!</p><br>
+				<p>Companies such as Google, Apple, and Amazon have been integral with pushing innovation in the industry, paving a path for small companies (such as ourselves) to develop and expand.</p><br>
+				<p>Here, we strive to be that bridge that connects established technology and tools by bigger companies, allowing our customers, seamless access to all aspects of your home.</p>
+			</h4>
+		</div>
+		<div id="service">
+			<h1 style="text-align: center; color:#3A4347;"><b>Our Services Include: </b> </h1>
+			<h4>
+				<p>* Monitoring Home Temperature</p>
+				<p>* Controlling Home Lights</p>
+				<p>* Monitoring Home HVAC System</p>
+				<p>* Monitoring the status of Doors</p>
+				<p>* Displaying an estimated Bill Based on Usage</p>
+			</h4>
+		</div>
+	</div>
+	<div class="container">
+		<div id="carouselExampleCaptions" class="carousel slide" data-ride="carousel">
+			<ol class="carousel-indicators">
+				<li data-target="#carouselExampleCaptions" data-slide-to="0" class="active"></li>
+				<li data-target="#carouselExampleCaptions" data-slide-to="1"></li>
+				<li data-target="#carouselExampleCaptions" data-slide-to="2"></li>
+			</ol>
+			<div class="carousel-inner">
+				<div class="carousel-item active">
+					<img src="static/images/phone.jpeg" class="d-block w-100" alt="...">
+					<div class="carousel-caption d-none d-md-block">
+						<h5 class = "cfont">Stay Connected</h5>
+						<p class = "cfont">Control your home from our Web App: Anytime. Anywhere.</p>
+					</div>
+				</div>
+				<div class="carousel-item">
+					<img src="static/images/seamless.jpg" class="d-block w-100" alt="...">
+					<div class="carousel-caption d-none d-md-block">
+						<h5 class = "cfont">Monitor Your Entire Home</h5>
+						<p class = "cfont">Control various different aspects of your home</p>
+					</div>
+				</div>
+				<div class="carousel-item">
+					<img src="static/images/incharge.jpg" class="d-block w-100" alt="...">
+					<div class="carousel-caption d-none d-md-block">
+						<h5 class="cfont1">Be In Charge</h5>
+						<p class="cfont1"> Keep track and be informed of your monthly appliance and utility usage.</p>
+					</div>
+				</div>
+			</div>
+			<a class="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-slide="prev">
+				<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+				<span class="sr-only">Previous</span>
+			</a>
+			<a class="carousel-control-next" href="#carouselExampleCaptions" role="button" data-slide="next">
+				<span class="carousel-control-next-icon" aria-hidden="true"></span>
+				<span class="sr-only">Next</span>
+			</a>
+		</div>
+		<div class="container" id="goal">
+			<div class="row">
+				<div class="col-sm-4">
+					<h1 style="color:#F9F9F9;"><b>Our Goals:</b></h1>
+					<p style="color:#F9F9F9;">○ To provide customers with best in class <em>efficiency</em></p>
+					<p style="color:#F9F9F9;">○ To allow for seamless operation and control of your home</p>
+					<p style="color: #F9F9F9;">○ To give customers the ability to maintain appliance in the home</p>
+					<p style="color:#F9F9F9;">○ To service and improve our application based on the needs of the customer</p>
+				</div>
+			</div>
+		</div>
+	</div>
+<!-- </div> -->
+{% endblock %}
+

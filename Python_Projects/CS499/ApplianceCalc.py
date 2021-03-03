@@ -3,6 +3,16 @@ from datetime import datetime
 
 curr_temp = 0
 
+"""
+Author: Jeremy Booth
+Class: CS499 Senior Capstone
+
+What is this?
+This file contains various functions which control how the smart home app keeps track of the power and water consumption of various appliances found throughout the physical house.
+In addition, it calculates the temperature of the house based on provided conditions from the "client".
+
+Note: All of these code functions were eventually integrated into the Smart Home App project.
+"""
 
 # returns the amount of power used to heat a gallon of water over the course of 4 minutes.
 def ret_water_heater():

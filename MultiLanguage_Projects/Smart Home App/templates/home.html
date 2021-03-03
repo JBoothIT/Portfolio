@@ -1,0 +1,121 @@
+{%  extends "base.html" %}
+{%  block title %}Home{%    endblock    %}
+{%  block styles %}
+<style>
+    .container {
+        /*background-color: #696969;*/
+    }
+
+    .row {
+        text-align: center;
+    }
+    <!-- body { -->
+       <!-- background: linear-gradient(to right,#6495ED,#0000FF); -->
+    <!-- } -->
+    .carousel-item, img{
+        height:750px!important;
+        border-radius: 50px;
+        border: 10px solid #555;
+
+    }
+    .h2 {
+        font-size: 3.5rem;
+    }
+    .col-sm-4 {
+        font-size: 1.2rem;
+        color: black;
+
+    }
+    .titlehead {
+        font-size: 6rem;
+        color: white;
+        -webkit-text-stroke-width: 2px;
+        -webkit-text-stroke-color: black;    
+    }
+    .cfont {
+        color: #008B8B;
+        font-weight: bold;
+    }
+   .carousel-control-prev {
+    background-color: gray;
+    border-radius: 35px;
+    width: 10%;
+   }
+   .carousel-control-next {
+    background-color: gray;
+    border-radius: 35px;
+    width: 10%;
+   }
+   .col-sm-4 h2 {
+    font-size: 2.5rem;
+   }
+
+   .bottomstuff {
+       color: white;
+   }
+   #homeImg {
+	 margin: auto;
+	height: 1000px;
+	width: 640px;
+	 display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 32px;
+   }
+	#headerText {
+		text-align: center;
+		margin: 32px;
+		font-size: 6vmin;
+	}
+
+    #factheader {
+        text-align: center;
+		margin: 32px;
+		font-size: 4vmin;
+    }
+
+    #fact {
+        text-align: center;
+    }
+
+    .alert {
+        text-align: center;
+  padding: 20px;
+  font-size: 27px;
+   background: linear-gradient(to right,#3A4347,#696969, #3A4347);
+  color: white;
+}
+
+.closebtn {
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 30px;
+  line-height: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 200px;
+}
+
+.closebtn:hover {
+  color: black;
+}
+
+</style>
+
+ {%  endblock    %} {%  block content   %}
+
+<h1 id="headerText"><b>WELCOME TO YOUR SMART HOME APP</b></h1>
+<!-- <img id = "homeImg" src="static/images/logo.jpg">  -->
+<img id = "homeImg" src="static/images/logo.jpg" class="d-block w-50 h-75" alt="...">
+
+<h2 id = "factheader">Historical Fact!</h2>
+
+
+<div class="alert">
+  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+  {{randomhistfact}}
+</div>
+
+{%  endblock    %}

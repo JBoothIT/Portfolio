@@ -1,0 +1,40 @@
+
+body{
+  font-family: 'Open Sans', sans-serif;
+}
+ header, footer{
+  background-color: white;
+  color: black;
+  padding: 20px;
+  text-align: center;
+} */
+ .navbar-inverse .navbar-nav li a{
+  color: bbb;
+} 
+.col-sm-2 .defaultImage img{
+  width: 700px;
+  height: 500px;
+  margin: 40px 0px;
+  float: left;
+}
+
+.col-sm-4{
+  text-align: center;
+  font-size: 25px;
+  margin:  auto;
+  width: 60px;
+}
+#carouselExampleCaptions{
+margin: 40px 0px;
+}
+
+#carouselExampleCaptions .carousel-inner .carousel-item img{
+width: 100%;
+height: auto;
+
+}
+/* footer {
+ position: absolute;
+ bottom: 0;
+ width: 100%;
+} */

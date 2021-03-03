@@ -1,0 +1,669 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %}
+
+
+
+{% block styles %}
+<!-- .container { -->
+<!-- width: 100%; -->
+<!-- height:100%; -->
+<!-- margin: auto; -->
+<!-- } -->
+<style>
+
+<!-- body { -->
+<!-- background: linear-gradient(to right, #6495ED,#0000FF); -->
+<!-- width: 100%; -->
+<!-- height: 100vh; -->
+<!-- background-size: 100%; -->
+<!-- } -->
+
+.descript{
+color:white;
+}
+
+.productImage {
+width: 200px;
+display: inline-block;
+margin: 0 40px 0 0;
+height: 180px;
+border-radius: 25px;
+border: 10px solid #555;
+}
+
+.product-bottom {
+width: 200px;
+display: inline-block;
+margin: 0 40px 0 0;
+height: 180px;
+}
+
+.product-bottom h3 {
+font-size: 20px;
+font-weight: bold;
+}
+
+.product-bottom h5 {
+font-size: 23px;
+padding-bottom: 10px;
+
+}
+
+.product-top:hover {
+opacity: 1;
+}
+
+.product-bottom .fa {
+color: #008B8B;
+font-size: 20px;
+}
+
+.purchasebutt {
+width: 80%;
+}
+
+.filtercss  {
+display: flex;
+align-items: center;
+}
+
+.filterButton{
+font-size: 20px;
+display: block;
+width: 200px;
+}
+
+.filterButton input.tnp-submit {
+background: #008B8B;
+color: #fff;
+width: 58px;
+height: 38px;
+}
+
+.outer {
+	display: table;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background-color: white;
+}
+.middle {
+	display: table-cell;
+	vertical-align: middle;
+}
+.inner {
+	height: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* <!-- background-image: url('https://cdn.discordapp.com/attachments/756946416055877662/770002432025296896/floor_plan_horizontal0.png'); -->
+<!-- background-size: 80%; -->
+<!-- background-position: center; -->
+<!-- background-repeat: no-repeat; -->
+<!-- background-color: black; -->
+<!-- } -->
+<!-- #floorPlanDiv { -->
+<!-- width:65%; -->
+<!-- float:left; -->
+<!-- align-content: center; -->
+<!-- padding-left: 0%; -->
+<!-- letter-spacing: 1px; -->
+<!-- height: 100%; -->
+<!-- border:4px solid black; -->
+<!-- } -->
+<!-- .center { -->
+<!-- display: block; -->
+<!-- margin-left: auto; -->
+<!-- margin-right: auto; -->
+<!-- } -->
+<!-- .room { -->
+<!-- position: relative; -->
+<!-- background-color: gray; -->
+<!-- border: 1px solid black; -->
+<!-- } -->
+<!-- #masterBathroom{ -->
+<!-- width: 12%; -->
+
+<!-- top: 1.5%; -->
+<!-- left: 13%; -->
+<!-- } -->
+<!-- #masterBedroom { -->
+<!-- width: 18.75%; -->
+
+<!-- top: 1.5%; -->
+<!-- left: 26%; -->
+<!-- } -->
+<!-- #bedroom1 { -->
+<!-- width: 18.75%; -->
+
+<!-- top: 1.5%; -->
+<!-- left: 26%; -->
+<!-- } --> */
+
+#allDiv {
+height: 80%;
+width: 100%;
+top: 88px;
+}
+h1 {
+	padding: 2vmax;
+	text-align: center;
+	font-size: 4vmin;
+	<!-- color: #F9F9F9; -->
+	<!-- font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; -->
+}
+p {
+	text-align: center;
+}
+
+
+
+
+#tempHolder {
+	width : 55%;
+	float:left;
+	height: 40%;
+	margin-top:50%;
+}
+
+#floorPlan {
+	height: 100%;
+	width: 65%;
+	float: left;
+}
+#floorPlanImg {
+	width: 800px;
+	position: relative;
+	display: block;
+	margin: auto;
+}
+#rooms {
+	height: 620.84px;
+	width: 800px;
+	position: relative;
+	bottom: 620.84px;
+	display: block;
+	margin: auto;
+}
+#masterBathroom {
+	width: 124px;
+	height: 124px;
+	position: relative;
+	display: block;
+	top: 9.84px;
+	left: 10px;
+	<!-- background-color: black; -->
+}
+#masterBedroom {
+	width: 201px;
+	height: 201px;
+	position: relative;
+	display: block;
+	bottom: 115px;
+	left: 143px;
+	<!-- background-color: white;	 -->
+}
+#kitchen {
+    width: 223px;
+    height: 124px;
+    position: relative;
+    display: block;
+    bottom: 239px;
+    left: 353px;
+	<!-- background-color: gray;	 -->
+}
+#bedroom1 {
+	width: 181px;
+    height: 163px;
+    position: relative;
+    display: block;
+    bottom: 440px;
+    left: 586px;
+	<!-- background-color: green; -->
+}
+#laundry {
+    width: 125px;
+    height: 68px;
+    position: relative;
+    display: block;
+    bottom: 469px;
+    left: 9px;
+	/* <!-- background-color: green; --> */
+}
+#bathroom {
+	width: 123px;
+    height: 123px;
+    position: relative;
+    display: block;
+    bottom: 498px;
+    left: 667px;
+	/* <!-- background-color: pink; --> */
+}
+#garage {
+    width: 278px;
+    height: 315px;
+    position: relative;
+    display: block;
+    bottom: 507px;
+    left: 9px;
+	/* <!-- background-color: pink; --> */
+}
+#livingRoom {
+    width: 280px;
+    height: 315px;
+    position: relative;
+    display: block;
+    bottom: 898px;
+    left: 296px;
+	/* <!-- background-color: red; --> */
+}
+#utility {
+    width: 124px;
+    height: 65px;
+    position: relative;
+    display: block;
+    bottom: 1213px;
+    left: 9px;
+	<!-- background-color: black; -->
+}
+#bedroom2 {
+    width: 181px;
+    height: 162px;
+    position: relative;
+    display: block;
+    bottom: 1126px;
+    left: 586px;
+	<!-- background-color: black; -->
+}
+#exterior {
+    width: 181px;
+    height: 76px;
+    position: relative;
+    display: block;
+    bottom: 1116px;
+    left: 375px;
+	<!-- background-color: black; -->
+}
+
+#thermostat {
+	height: 100%;
+	width: 35%;
+	float: right;
+	<!-- background-color: black; -->
+}
+#thermostatBackground {
+	width: 85%;
+	height: 45%;
+	margin: auto;
+	vertical-align: middle;
+	display:block;
+	text-align: center;
+	background-color: #F9F9F9;
+	border-radius: 25px;
+	padding: 10px;
+
+
+}
+#thermostatLeft {
+	float: left;
+	height: 100%;
+	width: 70%;
+	padding: 5%;
+	<!-- background-color: orange; -->
+}
+
+#currentTempDiv {
+	height: 75%;
+	width: 100%;
+}
+#thermostatRight {
+	float: right;
+	height: 100%;
+	width: 30%;
+	padding: 5%;
+	border-radius: 25px;
+	background-color: #3A4347;
+}
+#tempUpDiv {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+	height: 33%;
+	width: 100%;
+	<!-- background-color: blue; -->
+}
+#up {
+	width: 50%;
+	margin: auto;
+	display : block;
+	background-color: #3A4347;
+	font-size: 3vmin;
+	color: #CD5D70;
+	border: solid #3A4347;
+	
+	<!-- position: relative; -->
+	<!-- top: 5%; -->
+
+}
+#tempDownDiv {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+	height: 33%;
+	width: 100%;
+	<!-- background-color: blue; -->
+}
+
+#down{
+	width: 50%;
+	margin: auto;
+	display : block;
+	background-color: #3A4347;
+	font-size: 32px;
+	color: #CD5D70;
+	border: solid #3A4347;
+
+}
+
+
+#currentTemp {
+
+	
+	height: 100%;
+	width: 100%;
+
+
+	font-family: 'Courier New', Courier, monospace;
+	color: black;
+	color: #3A4347;
+
+	padding-top: 6vmin;
+	font-size: 12vmin;
+	font-weight: 420;
+	<!-- background-color: darkgrey; -->
+	
+		<!-- border: solid black; -->
+
+	
+	<!-- display: flex; -->
+	<!-- justify-content: center; -->
+	<!-- align-items: center; -->
+	
+	<!-- text-align: center; -->
+	<!-- margin: auto; -->
+	<!-- display: inline-block; -->
+	<!-- vertical-align: center; -->
+}
+#outsideTemp {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	height: 25%;
+	width: 100%;
+	margin: auto;
+
+
+	font-family: 'Courier New', Courier, monospace;
+	color: #3A4347;
+
+
+	font-size: 1.75vmin;
+	text-align:center;
+		<!-- background-color: rgb(90, 177, 169); -->
+	<!-- padding-top: 6px; -->
+	<!-- border: solid black; -->
+	
+	<!-- margin-left: 1%; -->
+	<!-- margin-right:auto; -->
+	<!-- margin-top: 2%; -->
+}
+
+
+#targetTempDiv {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+	height: 33%;
+	width: 100%;
+	<!-- background-color: blue; -->
+}
+
+#targetTemp {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	width: 100%;
+	display : block;
+
+	font-family: 'Courier New', Courier, monospace;
+	color: #F9F9F9;
+
+	font-size: 4vmin;
+	text-align:center;
+	
+		<!-- background-color: rgb(90, 177, 169); -->
+		<!-- border: solid black; -->
+
+		<!-- margin: 30%; -->
+		<!-- width: 60%; -->
+}
+.tempButton {
+	align-content: center;
+	color: yellow;
+	font-size: 92px;
+}
+
+</style>
+
+{% endblock %} 
+
+
+
+
+{% block content %}
+<div id="floorPlan">
+	<h1>Floor Plan</h1>
+	<img id="floorPlanImg" src="/static/images/floorPlan.png">
+	<div id="rooms">
+		<div id="masterBathroom">
+			<p>Master Bathroom</p>
+		</div>
+		<div id="masterBedroom">
+			<p>Master Bedroom</p>
+		</div>
+		<div id="kitchen">
+			<p>Kitchen</p>
+		</div>
+		<div id="bedroom1">
+			<p>Bedroom 1</p>
+		</div>
+		<div id="laundry">
+			<p>Laundry</p>
+		</div>
+		<div id="bathroom">
+			<p>Bathroom</p>
+		</div>
+		<div id="garage">
+			<p>Garage</p>
+		</div>
+		<div id="livingRoom">
+			<p>Living Room</p>
+		</div>
+		<div id="utility">
+			<p>Utility</p>
+		</div>
+		<div id="bedroom2">
+			<p>Bedroom 2</p>
+		</div>
+		<div id="exterior">
+			<p>Exterior</p>
+		</div>
+	</div>
+	
+	
+	
+</div>
+<div id="thermostat">
+	<h1>Thermostat</h1>
+	<div id="thermostatBackground">
+		<div id="thermostatLeft">
+			<div id="currentTempDiv">
+				<div class='box-container' id = 'currentTemp'>{{currentTemp}}</div>
+			</div>
+			
+			<div class = 'box-container' id = 'outsideTemp'> {{ outsidetemp }}
+				
+				<p>&nbsp;&nbsp;Outside</p>
+			</div>
+		</div>
+		<div id="thermostatRight">
+			<div id="tempUpDiv">
+				<button id = 'up' onclick = 'raiseTemp();' style = 'align-content: center;'><i class='fas fa-angle-up'></i></button>
+			</div>
+			<div id="targetTempDiv">
+				<div class='box-container' id = 'targetTemp'>{{currentTemp}}</div>
+			</div>
+			<div id="tempDownDiv">
+				<button id = 'down' onclick = 'lowerTemp()' style = 'align-content: center;'><i class='fas fa-angle-down'></i></button>
+			</div>
+			<!-- <div class="tempButton" onclick="raiseTemp();"> -->
+				<!-- <i class="fas fa-angle-up"></i> -->
+			<!-- </div> -->
+			<!-- <div class='box-container' id = 'targetTemp'style= 'float:left; width:40%'>77.0</div> -->
+			<!-- <div class="tempButton" onclick="lowerTemp();"> -->
+				<!-- <i class="fas fa-angle-down"></i> -->
+			</div>
+		</div>
+	</div>
+	
+	
+	<!-- <div class='box-container' id = 'currentTemp'>75.0</div> -->
+	
+	<!-- <div class = 'box-container' id = 'outsideTemp'style= 'float: right; width:40%'>81.0</div> -->
+	
+	<!-- <div class ='box-container' id = "tempHolder"> -->
+		<!-- <div class='box-container' id = 'currentTemp'>70.0</div> -->
+		<!-- <div class='box-container' id = 'targetTemp'style= 'float:left; width:40%'>77.0</div> -->
+		<!-- <div class = 'box-container' id = 'outsideTemp'style= 'float: right; width:40%'>81.0</div> -->
+	<!-- </div> -->
+	<!-- <div class='box-container' id = 'arrowHolder'style = 'float:right; width:15%; height: 35%; margin-top:60%; margin-right:26%; '> -->
+		<!-- <button id = 'up' onclick = 'raiseTemp();' style = 'align-content: center;'><i class='fas fa-angle-up'></i></button> -->
+		<!-- <button id = 'down' onclick = 'lowerTemp()' style = 'align-content: center;'><i class='fas fa-angle-down'></i></button> -->
+	<!-- </div> -->
+</div>
+
+
+<script>
+	
+	$('*[id*=Status]:visible').click(function(e) {console.log(e.currentTarget.id)});
+	
+	var urlRoute = '/tempcal';
+	
+    raiseTemp = function raiseTemp(){
+
+		var targetTemp = Number($("#targetTemp").html()) + 1;
+		
+		console.log("bump");
+		
+		$("#targetTemp,#currentTemp").html((targetTemp)); 
+		var data = {'currentTemp':targetTemp};
+		
+		sendInfoToServer(data,urlRoute)
+        
+    };
+    lowerTemp = function lowerTemp(){ 
+		
+		var targetTemp = Number($("#targetTemp").html()) - 1;
+		
+		console.log("bump");
+		
+		$("#targetTemp,#currentTemp").html((targetTemp)); 
+		var data = {'currentTemp':targetTemp};
+
+		sendInfoToServer(data, urlRoute)
+
+	};
+	
+
+
+
+	function populateIcon() {
+		var objectStatus = JSON.parse('{{ objectStatus | tojson | safe}}');
+		var i;
+		var j;
+		for (i = 0; i < Object.keys(objectStatus).length; i++) {
+			var roomKey = Object.keys(objectStatus)[i]; //Room name
+			for (j = 0; j < objectStatus[roomKey].length; j++) {
+				var item = objectStatus[roomKey][j]; //Item name
+				var img = document.createElement("img");
+				img.style.width = "40px";
+				img.id = item.name;
+				
+				if (item.status == "on") {
+					img.value = true;
+					img.src = "/static/images/Icons/" + item.name + "On.png";
+				} else {
+					img.value = false;
+					img.src = "/static/images/Icons/" + item.name + "Off.png";
+				}
+				document.getElementById(roomKey).appendChild(img);
+			}
+		}
+	}
+
+	function lightClick(img) {
+		if (img.value == true) {
+			img.src = "/static/images/Icons/" + img.id + "Off.png";
+			img.value = false;
+		}
+		else {
+			img.src = "/static/images/Icons/" + img.id + "On.png";
+			img.value = true;
+		}
+	}
+
+	// $("#overheadLight").attr('src').toUpperCase().includes("ON")
+
+	populateIcon();
+
+	$('*[src*=Light]:visible, *[src*=lamp]:visible').click(function(e) { //Change to this once everything is good $('*[src*=Light]:visible, *[src*=lamp]:visible').click(function(e) {
+		var targetImg = e.currentTarget;
+		var status = '';
+		if (targetImg.value == true) {
+			targetImg.src = "/static/images/Icons/" + targetImg.id + "Off.png";
+			targetImg.value = false;
+			
+			status = 'off';
+			
+			
+		}
+		else {
+
+			targetImg.src = "/static/images/Icons/" + targetImg.id + "On.png";
+			targetImg.value = true;
+
+			status = 'on';
+		}
+		// var data = "{" +
+        //         "'room':" + "'" + targetImg.parentNode.id + "'" + "," +
+        //         "'name':" + "'" + +targetImg.id + "'" + "," +
+        //         "'status':" + "'" + status + "'" +
+		//     "}";
+		
+		var data = {
+    	"room": targetImg.parentNode.id,
+    	"name": targetImg.id,
+    	"status": status 
+		};
+	
+			sendInfoToServer(data, '/floorplan')
+	});
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,246 @@
+{% extends "base.html" %} {% block title %}Usage{% endblock %}
+
+{% block styles %}
+<style>
+    .container {
+        width: 100%;
+        margin-top: 2%;
+        letter-spacing: 1px;
+		min-height: 100%;
+    }
+    /*End Filter Button Styles */
+
+    /* <!-- body { -->
+        <!-- background: linear-gradient(to right, #6495ED,#0000FF); -->
+        <!-- width: 100%; -->
+        <!-- height: 100vh; -->
+        <!-- background-size: 100%; -->
+    <!-- } --> */
+
+
+
+#myChart {
+	margin: auto;
+}
+
+#myChart2 {
+	margin: auto;
+}
+</style>
+
+{% endblock %} 
+{% block content %}
+
+<head>
+    <meta charset="utf-8" />
+    <title>Chart.js Example</title>
+    <!-- import plugin script -->
+    <script src='static/js/Chart.min.js'></script>
+
+<div class = "title">
+  <h1 id = 'titlewords' style="margin:0;">October Statistics</h1>
+  
+	<!-- bar chart canvas element -->
+	<canvas id="myChart" style='width:1200px;height:500px;'></canvas>
+	<!-- <p id="caption">The chart is displaying a simple line chart.</p> -->
+</div>
+ 
+<script>
+    // Global parameters:
+// do not resize the chart canvas when its container does (keep at 600x400px)
+Chart.defaults.global.responsive = false;
+ 
+ // define the chart data
+ var chartData = {
+   labels : [{% for item in labelsOct %}
+              "{{item}}",
+             {% endfor %}],
+   datasets : [{
+      //  label: '{{ legend }}',
+      label: "Power Usage",
+       fill: true,
+       lineTension: 0.1,
+      //  backgroundColor: "rgba(255, 0, 0, 0.3)",
+       borderColor: "rgba(255,255,0)",
+       borderCapStyle: 'butt',
+       borderDash: [],
+       borderDashOffset: 0.0,
+       borderJoinStyle: 'miter',
+       pointBorderColor: "rgba(75,192,192,1)",
+       pointBackgroundColor: "#fff",
+       pointBorderWidth: 1,
+       pointHoverRadius: 5,
+       pointHoverBackgroundColor: "F9F9F9",
+       pointHoverBorderColor: "rgba(220,220,220,1)",
+       pointHoverBorderWidth: 2,
+       pointRadius: 1,
+       pointHitRadius: 10,
+       data : [{% for item in powerValuesOct %}
+                 {{item}},
+               {% endfor %}],
+       spanGaps: false
+       }, {
+       label: "Water Usage",
+       fill: true,
+       lineTension: 0.1,
+      //  backgroundColor: "rgba(255, 0, 0, 0.3)",
+       borderColor: "rgba(1, 111, 213, 1)",
+       borderCapStyle: 'butt',
+       borderDash: [],
+       borderDashOffset: 0.0,
+       borderJoinStyle: 'miter',
+       pointBorderColor: "rgba(75,192,192,1)",
+       pointBackgroundColor: "#fff",
+       pointBorderWidth: 1,
+       pointHoverRadius: 5,
+       pointHoverBackgroundColor: "F9F9F9",
+       pointHoverBorderColor: "rgba(220,220,220,1)",
+       pointHoverBorderWidth: 2,
+       pointRadius: 1,
+       pointHitRadius: 10,
+       data : [{% for item in waterValuesOct %}
+                 {{item}},
+               {% endfor %}],
+       spanGaps: false
+       }, {
+       label: "Costs",
+       fill: true,
+       lineTension: 0.1,
+      //  backgroundColor: "rgba(255, 0, 0, 0.3)",
+       borderColor: "rgba(0,128,0)",
+       borderCapStyle: 'butt',
+       borderDash: [],
+       borderDashOffset: 0.0,
+       borderJoinStyle: 'miter',
+       pointBorderColor: "rgba(75,192,192,1)",
+       pointBackgroundColor: "#fff",
+       pointBorderWidth: 1,
+       pointHoverRadius: 5,
+       pointHoverBackgroundColor: "F9F9F9",
+       pointHoverBorderColor: "rgba(220,220,220,1)",
+       pointHoverBorderWidth: 2,
+       pointRadius: 1,
+       pointHitRadius: 10,
+       data : [{% for item in costsOct %}
+                 {{item}},
+               {% endfor %}],
+       spanGaps: false
+       }
+   
+       ]
+ };
+  
+ // get chart canvas
+ var ctx = document.getElementById("myChart").getContext("2d");
+  
+ // create the chart using the chart canvas
+ var myChart = new Chart(ctx, {
+   type: 'line',
+   data: chartData,
+ });
+</script>
+
+<div class = "title">
+	<h1 class = 'titlewords'></h1>
+  <!-- bar chart canvas element -->
+  <h1 id = 'titlewords' style="margin:0;">November Statistics</h1>
+	<canvas id="myChart2" style='width:1200px;height:500px;margin-bottom:32px;'></canvas>
+	<!-- <p id="caption">The chart is displaying a simple line chart.</p> -->
+</div>
+
+<script>
+	// Global parameters:
+	// do not resize the chart canvas when its container does (keep at 600x400px)
+	Chart.defaults.global.responsive = false;
+	 
+	 // define the chart data
+	 var newchartData = {
+	   labels : [{% for item in labelsNov %}
+				  "{{item}}",
+				 {% endfor %}],
+	   datasets : [{
+		  //  label: '{{ legend }}',
+		  label: "Power Usage",
+		   fill: true,
+		   lineTension: 0.1,
+		  //  backgroundColor: "rgba(255, 0, 0, 0.3)",
+		   borderColor: "rgba(255,255,0)",
+		   borderCapStyle: 'butt',
+		   borderDash: [],
+		   borderDashOffset: 0.0,
+		   borderJoinStyle: 'miter',
+		   pointBorderColor: "rgba(75,192,192,1)",
+		   pointBackgroundColor: "#fff",
+		   pointBorderWidth: 1,
+		   pointHoverRadius: 5,
+		   pointHoverBackgroundColor: "F9F9F9",
+		   pointHoverBorderColor: "rgba(220,220,220,1)",
+		   pointHoverBorderWidth: 2,
+		   pointRadius: 1,
+		   pointHitRadius: 10,
+		   data : [{% for item in powerValuesNov %}
+					 {{item}},
+				   {% endfor %}],
+		   spanGaps: false
+		   }, {
+		   label: "Water Usage",
+		   fill: true,
+		   lineTension: 0.1,
+		  //  backgroundColor: "rgba(255, 0, 0, 0.3)",
+		   borderColor: "rgba(1, 111, 213, 1)",
+		   borderCapStyle: 'butt',
+		   borderDash: [],
+		   borderDashOffset: 0.0,
+		   borderJoinStyle: 'miter',
+		   pointBorderColor: "rgba(75,192,192,1)",
+		   pointBackgroundColor: "#fff",
+		   pointBorderWidth: 1,
+		   pointHoverRadius: 5,
+		   pointHoverBackgroundColor: "F9F9F9",
+		   pointHoverBorderColor: "rgba(220,220,220,1)",
+		   pointHoverBorderWidth: 2,
+		   pointRadius: 1,
+		   pointHitRadius: 10,
+		   data : [{% for item in waterValuesNov %}
+					 {{item}},
+				   {% endfor %}],
+		   spanGaps: false
+		   }, {
+		   label: "Costs",
+		   fill: true,
+		   lineTension: 0.1,
+		  //  backgroundColor: "rgba(255, 0, 0, 0.3)",
+		   borderColor: "rgba(0,128,0)",
+		   borderCapStyle: 'butt',
+		   borderDash: [],
+		   borderDashOffset: 0.0,
+		   borderJoinStyle: 'miter',
+		   pointBorderColor: "rgba(75,192,192,1)",
+		   pointBackgroundColor: "#fff",
+		   pointBorderWidth: 1,
+		   pointHoverRadius: 5,
+       pointHoverBackgroundColor: "F9F9F9",
+		   pointHoverBorderColor: "rgba(220,220,220,1)",
+		   pointHoverBorderWidth: 2,
+		   pointRadius: 1,
+		   pointHitRadius: 10,
+		   data : [{% for item in costsNov %}
+					 {{item}},
+				   {% endfor %}],
+		   spanGaps: false
+		   }
+	   
+		   ]
+	};
+
+   // get chart canvas
+ var ctx = document.getElementById("myChart2").getContext("2d");
+  
+  // create the chart using the chart canvas
+  var myChart2 = new Chart(ctx, {
+    type: 'line',
+    data: newchartData,
+  });
+
+</script>
+{% endblock %}

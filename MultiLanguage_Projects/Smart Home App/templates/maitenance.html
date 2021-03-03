@@ -1,0 +1,136 @@
+{% extends "base.html" %} {% block title %}Maintenance{% endblock %}
+
+{% block styles %}
+<!-- body { -->
+	<!-- background: linear-gradient(to right, #6495ED,#0000FF); -->
+	<!-- width: 100%; -->
+	<!-- background-size: 100%; -->
+<!-- } -->
+<style>
+	
+.descript {
+	color:white;
+}
+
+.filtercss {
+	display: flex;
+	align-items: center;
+}
+
+.filterButton {
+	font-size: 20px;
+	display: block;
+	width: 200px;
+}
+
+.filterButton input.tnp-submit {
+	background: #008B8B;
+	color: #fff;
+	width: 58px;
+	height: 38px;
+}
+
+.rooms {
+	border-style: solid;
+	border-width: 3px;
+	height: auto;
+	width: 256px;
+	padding: 16px 32px 32px 32px;;
+	margin: 8px;
+}
+
+H1 {
+  text-align: center;
+  padding: 16px;
+  margin: 0;
+}
+
+H4 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+
+
+#maintenance {
+	width: 100%;
+	padding: 0 8px;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+</style>
+
+{% endblock %} 
+{% block content %}
+<h1>Maintenance</h1>
+<div id='maintenance'>
+</div>
+
+<script>
+var objectStatus = JSON.parse('{{ objectStatus | tojson | safe}}');
+var i;
+var j;
+
+for (i = 0; i < Object.keys(objectStatus).length; i++) {
+  var div = document.createElement("div"); //Room container
+  var roomKey = Object.keys(objectStatus)[i]; //Room name
+  var h = document.createElement("H4");
+  var t = document.createTextNode(roomKey);
+  
+  h.appendChild(t);
+  div.id = Object.keys(objectStatus)[i];
+  div.className = 'rooms';
+ 
+  div.appendChild(h);
+  document.getElementById("maintenance").appendChild(div);
+  
+  for (j = 0; j < objectStatus[roomKey].length; j++) {
+	var innerDiv = document.createElement("div"); //Item container
+	
+	var item = objectStatus[roomKey][j]; //Item name
+	var statusInput = document.createElement("input");
+	
+	innerDiv.id = item.name;
+	innerDiv.innerHTML = item.name + " ";
+	document.getElementById(roomKey).appendChild(innerDiv);
+
+	statusInput.type = "checkbox";
+	statusInput.id = item.name + "Status";
+	statusInput.checked = false;
+	innerDiv.appendChild(statusInput);
+	
+	
+
+	if (item.status == "on") {
+	  statusInput.checked = true;
+	}
+  }
+}
+$('*[id*=Status]:visible').click(function(e) {
+	
+	var currentcheckbox = e.currentTarget;
+	var status = '';
+	console.log(currentcheckbox.checked);
+	if (currentcheckbox.checked == true) {
+			status = 'on';
+			
+			
+		}
+		else {
+
+			status = 'off';
+		}
+
+		var data = {
+    	"room": currentcheckbox.parentNode.parentNode.id,
+    	"name": currentcheckbox.parentNode.id,
+    	"status": status 
+		};
+
+		sendInfoToServer(data, '/iconcal')
+
+	console.log(e.currentTarget.id)});
+</script>
+
+{% endblock %}

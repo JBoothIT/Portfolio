@@ -1,0 +1,53 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+
+/*Aligns the navigation bar and sets its color*/
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: crimson;
+    color: white;
+}
+
+
+/*makes the logo bigger and centers it away from the edge of the screen*/
+
+.logo {
+    font-size: 2.5rem;
+    margin: .5rem;
+}
+
+
+/*removes any styling from the nav selection and centers it away from the edge of the screen*/
+
+.navbar-selection ul {
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+
+/*removes the list style from the menu buttons*/
+
+.navbar-selection li {
+    list-style: none;
+}
+
+
+/*removes any styling from the words of our menu buttons and sets their colors to white*/
+
+.navbar-selection li a {
+    text-decoration: none;
+    color: white;
+    padding: 1rem;
+    display: block;
+}
